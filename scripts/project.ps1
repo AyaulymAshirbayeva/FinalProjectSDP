@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('build', 'test', 'run')]
+    [ValidateSet('build', 'test')]
     [string]$Task = 'test',
     [string]$JdkHome = $env:JAVA_HOME
 )
@@ -27,9 +27,6 @@ try {
             & $java '-Dfile.encoding=UTF-8' -cp $output ('LanguageLearningApp.tests.' + $testClass.BaseName)
             if ($LASTEXITCODE -ne 0) { throw ('Test failed: ' + $testClass.BaseName) }
         }
-    } elseif ($Task -eq 'run') {
-        & $java '-Dfile.encoding=UTF-8' -cp $output LanguageLearningApp.Main
-        if ($LASTEXITCODE -ne 0) { throw 'Application failed.' }
     } else {
         Write-Output ('Compiled classes: ' + $output)
     }
