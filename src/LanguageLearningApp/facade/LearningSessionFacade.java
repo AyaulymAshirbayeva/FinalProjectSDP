@@ -30,6 +30,10 @@ public class LearningSessionFacade {
         return lessonDirector.greetings();
     }
 
+    public LessonProduct createGreetingsLesson(String targetLanguage) {
+        return lessonDirector.greetings(targetLanguage);
+    }
+
     public List<ExerciseInterface> createExercises(LessonProduct lesson) {
         return exerciseCreator.createExercises(lesson);
     }

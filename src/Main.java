@@ -26,15 +26,32 @@ public class Main {
         publisher.addObserver(reminders);
         LearningSessionFacade session = new LearningSessionFacade(director, creator, scheduler, publisher);
 
-        System.out.println("=== Language Learning App ===");
-        System.out.println("[Builder] Building the Greetings lesson...");
-        LessonProduct lesson = session.createGreetingsLesson();
-        System.out.println("Lesson: " + lesson.getTitle() + " (" + lesson.getVocabulary().size() + " words)");
-
-        System.out.println("[Factory Method] Creating multiple-choice exercises...");
-        List<ExerciseInterface> exercises = session.createExercises(lesson);
-        int correct = 0;
         try (Scanner input = new Scanner(System.in)) {
+            System.out.println("=== Language Learning App ===");
+            System.out.println("Выберите язык для изучения:");
+            System.out.println("1. Русский  2. Deutsch  3. 中文");
+            System.out.print("Ваш выбор: ");
+            if (!input.hasNextLine()) return;
+            String choice = input.nextLine().strip();
+            String targetLanguage = switch (choice) {
+                case "1" -> "Russian";
+                case "2" -> "German";
+                case "3" -> "Chinese";
+                default -> null;
+            };
+            if (targetLanguage == null) {
+                System.out.println("Неверный выбор. Перезапустите приложение и выберите 1, 2 или 3.");
+                return;
+            }
+            System.out.println("Вы выбрали: " + targetLanguage + ". Перевод вопросов будет на английском.");
+
+            System.out.println("[Builder] Building the Greetings lesson...");
+            LessonProduct lesson = session.createGreetingsLesson(targetLanguage);
+            System.out.println("Lesson: " + lesson.getTitle() + " (" + lesson.getVocabulary().size() + " words)");
+
+            System.out.println("[Factory Method] Creating multiple-choice exercises...");
+            List<ExerciseInterface> exercises = session.createExercises(lesson);
+            int correct = 0;
             for (ExerciseInterface exercise : exercises) {
                 ExerciseInterface decorated = session.decorateWithHint(exercise);
                 System.out.println("\n[Decorator] HintDecorator added to the exercise prompt.");
