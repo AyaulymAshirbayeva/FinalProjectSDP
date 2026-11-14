@@ -1,4 +1,4 @@
-package LanguageLearningApp.decorator.decorators;
+package LanguageLearningApp.decorator;
 
 import LanguageLearningApp.factory.products.ExerciseInterface;
 import LanguageLearningApp.factory.products.ExerciseText;
