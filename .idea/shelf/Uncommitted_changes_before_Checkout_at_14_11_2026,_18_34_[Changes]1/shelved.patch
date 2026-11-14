@@ -1,0 +1,69 @@
+Index: src/LanguageLearningApp/observer/observer/ObserverInterface.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package LanguageLearningApp.observer.observer;\n\npublic interface ObserverInterface {\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/LanguageLearningApp/observer/observer/ObserverInterface.java b/src/LanguageLearningApp/observer/observer/ObserverInterface.java
+--- a/src/LanguageLearningApp/observer/observer/ObserverInterface.java	(revision 717031b923c49a1e0e2af839b0b7aacb353e3b17)
++++ b/src/LanguageLearningApp/observer/observer/ObserverInterface.java	(date 1794663251623)
+@@ -1,4 +1,5 @@
+ package LanguageLearningApp.observer.observer;
+ 
+ public interface ObserverInterface {
++    void update(LearningEvent event);
+ }
+Index: src/LanguageLearningApp/observer/subject/SubjectInterface.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package LanguageLearningApp.observer.subject;\n\npublic class SubjectInterface {\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/LanguageLearningApp/observer/subject/SubjectInterface.java b/src/LanguageLearningApp/observer/subject/SubjectInterface.java
+--- a/src/LanguageLearningApp/observer/subject/SubjectInterface.java	(revision 717031b923c49a1e0e2af839b0b7aacb353e3b17)
++++ b/src/LanguageLearningApp/observer/subject/SubjectInterface.java	(date 1794663251625)
+@@ -1,4 +1,8 @@
+ package LanguageLearningApp.observer.subject;
+ 
+-public class SubjectInterface {
++public interface Subject {
++    void addObserver(Observer observer);
++    void removeObserver(Observer observer);
++    void notifyObservers(LearningEvent event);
+ }
++
+Index: src/LanguageLearningApp/facade/LearningSessionFacade.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package LanguageLearningApp.facade;\n\nimport LanguageLearningApp.builder.LessonDirector;\nimport LanguageLearningApp.factory.creators.CreatorAbstract;\nimport LanguageLearningApp.strategy.ReviewSchedulerContext;\nimport LanguageLearningApp.observer.subject.LearningEventPublisher;\n\npublic class LearningSessionFacade {\n    private LessonDirector lessonDirector;\n    private CreatorAbstract exerciseCreator;\n    private ReviewSchedulerContext reviewScheduler;\n    private LearningEventPublisher eventPublisher;\n\n    public LearningSessionFacade(LessonDirector lessonDirector, CreatorAbstract exerciseCreator,\n                                 ReviewSchedulerContext reviewScheduler, LearningEventPublisher eventPublisher) {\n        this.lessonDirector = lessonDirector;\n        this.exerciseCreator = exerciseCreator;\n        this.reviewScheduler = reviewScheduler;\n        this.eventPublisher = eventPublisher;\n    }\n}\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/LanguageLearningApp/facade/LearningSessionFacade.java b/src/LanguageLearningApp/facade/LearningSessionFacade.java
+--- a/src/LanguageLearningApp/facade/LearningSessionFacade.java	(revision 717031b923c49a1e0e2af839b0b7aacb353e3b17)
++++ b/src/LanguageLearningApp/facade/LearningSessionFacade.java	(date 1794663261570)
+@@ -1,22 +1,4 @@
+ package LanguageLearningApp.facade;
+ 
+-import LanguageLearningApp.builder.LessonDirector;
+-import LanguageLearningApp.factory.creators.CreatorAbstract;
+-import LanguageLearningApp.strategy.ReviewSchedulerContext;
+-import LanguageLearningApp.observer.subject.LearningEventPublisher;
+-
+ public class LearningSessionFacade {
+-    private LessonDirector lessonDirector;
+-    private CreatorAbstract exerciseCreator;
+-    private ReviewSchedulerContext reviewScheduler;
+-    private LearningEventPublisher eventPublisher;
+-
+-    public LearningSessionFacade(LessonDirector lessonDirector, CreatorAbstract exerciseCreator,
+-                                 ReviewSchedulerContext reviewScheduler, LearningEventPublisher eventPublisher) {
+-        this.lessonDirector = lessonDirector;
+-        this.exerciseCreator = exerciseCreator;
+-        this.reviewScheduler = reviewScheduler;
+-        this.eventPublisher = eventPublisher;
+-    }
+ }
+-
