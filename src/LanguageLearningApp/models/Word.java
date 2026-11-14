@@ -1,4 +1,4 @@
 package LanguageLearningApp.models;
 
-public class WordCards {
+public class Word {
 }
