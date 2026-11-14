@@ -34,7 +34,6 @@ public final class MultipleChoiceCreator extends CreatorAbstract {
         Map<String, String> distractors = new LinkedHashMap<>();
         for (Word candidate : vocabulary) {
             Objects.requireNonNull(candidate, "Vocabulary must not contain null words.");
-            // Exclude other languages and synonyms of the answer, not just the same object.
             if (!language.equals(ExerciseText.normalize(candidate.getLanguage()))
                     || translation.equals(ExerciseText.normalize(candidate.getTranslation()))) {
                 continue;

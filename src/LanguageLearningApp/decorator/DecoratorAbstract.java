@@ -5,7 +5,6 @@ import LanguageLearningApp.models.Word;
 import java.util.List;
 import java.util.Objects;
 
-/** Wraps any exercise, including another decorator, through the shared product interface. */
 public abstract class DecoratorAbstract implements ExerciseInterface {
     private final ExerciseInterface exercise;
 

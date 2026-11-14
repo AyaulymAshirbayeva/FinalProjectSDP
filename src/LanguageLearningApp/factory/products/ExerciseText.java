@@ -3,7 +3,6 @@ package LanguageLearningApp.factory.products;
 import java.text.Normalizer;
 import java.util.Locale;
 
-/** One comparison rule for typed answers and duplicate choices. Accents remain meaningful. */
 public final class ExerciseText {
     private ExerciseText() {
     }
