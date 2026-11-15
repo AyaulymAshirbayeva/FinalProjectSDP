@@ -23,7 +23,6 @@ public class LearningSessionFacade {
     private final ReviewSchedulerContext reviewScheduler;
     private final LearningEventPublisher eventPublisher;
     private final User user;
-    private int correctAnswerCount;
     private int completedLessonCount;
     private LessonProduct activeLesson;
     private final Set<Word> pendingWords = new HashSet<>();
@@ -86,7 +85,6 @@ public class LearningSessionFacade {
         boolean addedForReview = reviewScheduler.addWord(word);
         pendingWords.remove(word);
         if (correct) {
-            correctAnswerCount++;
             user.addLearnedWord(word);
         }
         eventPublisher.notifyObservers(correct ? "ANSWER_CORRECT" : "ANSWER_INCORRECT", word.getTerm());
@@ -117,10 +115,6 @@ public class LearningSessionFacade {
         }
         notifyReviewScheduled(word);
         return nextReview;
-    }
-
-    public int getCorrectAnswerCount() {
-        return correctAnswerCount;
     }
 
     public int getCompletedLessonCount() {

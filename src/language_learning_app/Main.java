@@ -103,7 +103,7 @@ public class Main {
                 boolean translationShown = false;
                 while (answer.equals("?")) {
                     if (!translationShown) {
-                        decorated = session.revealTranslation(exercise);
+                        decorated = session.decorateWithTranslation(decorated);
                         translationShown = true;
                     }
                     System.out.println(decorated.getPrompt());
