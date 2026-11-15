@@ -10,7 +10,7 @@
 | Kuttibay Tangatar | Builder, Strategy |
 
 
-A console application for learning vocabulary in a foreign language. It was built as the final project for the **Software Design Patterns** course (SE-2507) and demonstrates six GoF design patterns working together in one program.
+A console application for learning vocabulary in a foreign language. It was built as the final project for the **Software Design Patterns** course and demonstrates six GoF design patterns working together in one program.
 
 ## What the app does
 
