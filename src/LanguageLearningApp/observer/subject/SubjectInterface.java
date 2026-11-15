@@ -1,5 +1,5 @@
 package LanguageLearningApp.observer.subject;
-import LanguageLearningApp.observer.observer.ObserverInterface;
+import LanguageLearningApp.observer.Observer.ObserverInterface;
 
 public interface SubjectInterface {
     void addObserver(ObserverInterface observer);

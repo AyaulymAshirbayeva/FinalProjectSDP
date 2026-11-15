@@ -1,4 +1,4 @@
-package LanguageLearningApp.observer.observer;
+package LanguageLearningApp.observer.Observer;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

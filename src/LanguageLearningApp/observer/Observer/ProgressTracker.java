@@ -1,4 +1,4 @@
-package LanguageLearningApp.observer.observer;
+package LanguageLearningApp.observer.Observer;
 public class ProgressTracker implements ObserverInterface {
     private int correctAnswers;
     private int incorrectAnswers;

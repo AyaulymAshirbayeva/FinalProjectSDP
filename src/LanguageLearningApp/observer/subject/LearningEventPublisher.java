@@ -1,5 +1,5 @@
 package LanguageLearningApp.observer.subject;
-import LanguageLearningApp.observer.observer.ObserverInterface;
+import LanguageLearningApp.observer.Observer.ObserverInterface;
 
 import java.util.ArrayList;
 import java.util.List;
