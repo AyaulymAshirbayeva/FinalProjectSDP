@@ -26,8 +26,8 @@ public class ReviewSchedulerContext {
         this.strategy = Objects.requireNonNull(strategy);
     }
 
-    public void addWord(Word word) {
-        reviewDates.putIfAbsent(Objects.requireNonNull(word), LocalDate.now(clock));
+    public boolean addWord(Word word) {
+        return reviewDates.putIfAbsent(Objects.requireNonNull(word), LocalDate.now(clock)) == null;
     }
 
     public List<Word> dueWords() {

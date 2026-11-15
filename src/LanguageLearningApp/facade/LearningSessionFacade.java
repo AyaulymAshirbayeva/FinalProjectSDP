@@ -10,8 +10,9 @@ import LanguageLearningApp.models.User;
 import LanguageLearningApp.models.Word;
 import LanguageLearningApp.observer.subject.LearningEventPublisher;
 import LanguageLearningApp.strategy.ReviewSchedulerContext;
-import java.util.Collections;
-import java.util.IdentityHashMap;
+import LanguageLearningApp.strategy.StrategyInterface;
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -22,11 +23,10 @@ public class LearningSessionFacade {
     private final ReviewSchedulerContext reviewScheduler;
     private final LearningEventPublisher eventPublisher;
     private final User user;
+    private int correctAnswerCount;
+    private int completedLessonCount;
     private LessonProduct activeLesson;
-    private List<ExerciseInterface> activeExercises = List.of();
-    private boolean lessonCompleted;
-    private final Set<ExerciseInterface> answeredExercises =
-            Collections.newSetFromMap(new IdentityHashMap<>());
+    private final Set<Word> pendingWords = new HashSet<>();
 
     public LearningSessionFacade(LessonDirector lessonDirector, CreatorAbstract exerciseCreator,
                                  ReviewSchedulerContext reviewScheduler, LearningEventPublisher eventPublisher,
@@ -51,56 +51,58 @@ public class LearningSessionFacade {
     }
 
     public List<ExerciseInterface> createExercises(LessonProduct lesson) {
-        activeLesson = Objects.requireNonNull(lesson);
-        activeExercises = exerciseCreator.createExercises(lesson);
-        answeredExercises.clear();
-        lessonCompleted = false;
-        return activeExercises;
+        if (activeLesson != null) {
+            throw new IllegalStateException("Complete the current lesson before starting another.");
+        }
+        List<ExerciseInterface> exercises = exerciseCreator.createExercises(lesson);
+        Set<Word> words = new HashSet<>(lesson.getVocabulary());
+        if (words.size() != exercises.size()) {
+            throw new IllegalArgumentException("A lesson must not repeat the same Word instance.");
+        }
+        activeLesson = lesson;
+        pendingWords.addAll(words);
+        return exercises;
     }
 
     public ExerciseInterface decorateWithHint(ExerciseInterface exercise) {
         return new HintDecorator(exercise);
     }
 
+    public ExerciseInterface decorateWithTranslation(ExerciseInterface exercise) {
+        return new TranslationDecorator(exercise);
+    }
+
     public ExerciseInterface revealTranslation(ExerciseInterface exercise) {
-        return new TranslationDecorator(new HintDecorator(exercise));
+        return decorateWithTranslation(decorateWithHint(exercise));
     }
 
     public boolean submitAnswer(ExerciseInterface exercise, String answer) {
         Objects.requireNonNull(exercise);
-        if (!activeExercises.contains(exercise)) {
-            throw new IllegalArgumentException("Exercise does not belong to the active lesson.");
-        }
-        if (answeredExercises.contains(exercise)) {
-            throw new IllegalStateException("This exercise has already been answered.");
-        }
-
-        boolean correct = exercise.checkAnswer(answer);
         Word word = exercise.getWord();
-        answeredExercises.add(exercise);
+        if (activeLesson == null || !pendingWords.contains(word)) {
+            throw new IllegalStateException("This word is not awaiting an answer in the current lesson.");
+        }
+        boolean correct = exercise.checkAnswer(answer);
+        boolean addedForReview = reviewScheduler.addWord(word);
+        pendingWords.remove(word);
         if (correct) {
-            user.incrementCorrectAnswers();
+            correctAnswerCount++;
             user.addLearnedWord(word);
         }
         eventPublisher.notifyObservers(correct ? "ANSWER_CORRECT" : "ANSWER_INCORRECT", word.getTerm());
-        reviewScheduler.addWord(word);
-        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getTerm());
+        if (addedForReview) {
+            notifyReviewScheduled(word);
+        }
         return correct;
     }
 
     public void completeLesson(LessonProduct lesson) {
         Objects.requireNonNull(lesson);
-        if (lesson != activeLesson) {
-            throw new IllegalArgumentException("Lesson is not the active lesson.");
+        if (activeLesson != lesson || !pendingWords.isEmpty()) {
+            throw new IllegalStateException("Answer every exercise in the active lesson before completing it.");
         }
-        if (lessonCompleted) {
-            throw new IllegalStateException("This lesson has already been completed.");
-        }
-        if (answeredExercises.size() != activeExercises.size()) {
-            throw new IllegalStateException("Every exercise must be answered before completing the lesson.");
-        }
-        lessonCompleted = true;
-        user.incrementCompletedLessons();
+        activeLesson = null;
+        completedLessonCount++;
         eventPublisher.notifyObservers("LESSON_COMPLETED", lesson.getTitle());
     }
 
@@ -108,28 +110,32 @@ public class LearningSessionFacade {
         return reviewScheduler.dueWords();
     }
 
-    public java.time.LocalDate review(Word word, int quality) {
-        java.time.LocalDate nextReview = reviewScheduler.review(word, quality);
+    public LocalDate review(Word word, int quality) {
+        LocalDate nextReview = reviewScheduler.review(word, quality);
         if (quality >= 3) {
             user.addLearnedWord(word);
         }
-        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getTerm());
+        notifyReviewScheduled(word);
         return nextReview;
     }
 
     public int getCorrectAnswerCount() {
-        return user.getCorrectAnswersCount();
+        return correctAnswerCount;
     }
 
     public int getCompletedLessonCount() {
-        return user.getCompletedLessons();
+        return completedLessonCount;
     }
 
     public int getLearnedWordCount() {
         return user.getLearnedWords().size();
     }
 
-    public void setReviewStrategy(LanguageLearningApp.strategy.StrategyInterface strategy) {
+    public void setReviewStrategy(StrategyInterface strategy) {
         reviewScheduler.setStrategy(strategy);
+    }
+
+    private void notifyReviewScheduled(Word word) {
+        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getLanguage() + ": " + word.getTerm());
     }
 }

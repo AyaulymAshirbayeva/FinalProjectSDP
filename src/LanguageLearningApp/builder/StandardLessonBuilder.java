@@ -12,7 +12,10 @@ public class StandardLessonBuilder implements BuilderInterface {
 
     @Override
     public BuilderInterface start(int id, String title) {
-        this.title = Objects.requireNonNull(title);
+        if (id <= 0 || title == null || title.isBlank()) {
+            throw new IllegalArgumentException("A lesson needs a positive id and a non-blank title.");
+        }
+        this.title = title.strip();
         this.id = id;
         vocabulary.clear();
         return this;
@@ -20,6 +23,9 @@ public class StandardLessonBuilder implements BuilderInterface {
 
     @Override
     public BuilderInterface addWord(Word word) {
+        if (title == null) {
+            throw new IllegalStateException("Start a lesson before adding words.");
+        }
         vocabulary.add(Objects.requireNonNull(word));
         return this;
     }

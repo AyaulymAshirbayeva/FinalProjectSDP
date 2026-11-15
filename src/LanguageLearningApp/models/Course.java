@@ -7,24 +7,34 @@ import java.util.Objects;
 
 public class Course {
     private final String languageName;
-    private final List<Word> vocabulary = new ArrayList<>();
     private final List<LessonProduct> lessons = new ArrayList<>();
 
     public Course(String languageName) {
-        this.languageName = Objects.requireNonNull(languageName);
+        if (languageName == null || languageName.isBlank()) {
+            throw new IllegalArgumentException("Course language must not be blank.");
+        }
+        this.languageName = languageName.strip();
     }
+
     public String getLanguageName() {
         return languageName;
     }
-    public void addWord(Word word) {
-        vocabulary.add(Objects.requireNonNull(word));
-    }
+
     public List<Word> getVocabulary() {
-        return List.copyOf(vocabulary);
+        return lessons.stream().flatMap(lesson -> lesson.getVocabulary().stream()).distinct().toList();
     }
+
     public void addLesson(LessonProduct lesson) {
-        lessons.add(Objects.requireNonNull(lesson));
+        Objects.requireNonNull(lesson);
+        if (lessons.stream().anyMatch(existing -> existing.getId() == lesson.getId())) {
+            throw new IllegalArgumentException("Lesson id is already present in this course.");
+        }
+        if (lesson.getVocabulary().stream().anyMatch(word -> !languageName.equalsIgnoreCase(word.getLanguage()))) {
+            throw new IllegalArgumentException("Lesson vocabulary must match the course language.");
+        }
+        lessons.add(lesson);
     }
+
     public List<LessonProduct> getLessons() {
         return List.copyOf(lessons);
     }

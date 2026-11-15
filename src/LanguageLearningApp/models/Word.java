@@ -38,12 +38,18 @@ public class Word {
         return repetitions;
     }
     public void setRepetitions(int repetitions) {
+        if (repetitions < 0) {
+            throw new IllegalArgumentException("Repetitions must not be negative.");
+        }
         this.repetitions = repetitions;
     }
     public int getIntervalDays() {
         return intervalDays;
     }
     public void setIntervalDays(int intervalDays) {
+        if (intervalDays < 1) {
+            throw new IllegalArgumentException("Review interval must be at least one day.");
+        }
         this.intervalDays = intervalDays;
     }
     public double getEasinessFactor() {
@@ -51,6 +57,9 @@ public class Word {
     }
 
     public void setEasinessFactor(double easinessFactor) {
+        if (!Double.isFinite(easinessFactor)) {
+            throw new IllegalArgumentException("Easiness factor must be finite.");
+        }
         this.easinessFactor = Math.max(1.3, easinessFactor); // По стандарту SM-2 минимум 1.3
     }
 
