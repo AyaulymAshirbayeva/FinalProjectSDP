@@ -1,23 +1,18 @@
 package LanguageLearningApp.observer.observer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class ReminderService implements ObserverInterface {
-    private List<String> reminders = new ArrayList<>();
+    private final Set<String> reminders = new LinkedHashSet<>();
 
     @Override
     public void update(String eventType, String word) {
         if (eventType.equals("REVIEW_SCHEDULED")) {
             reminders.add("Review word: " + word);
-            System.out.println("Reminder added for: " + word);
-
-        } else if (eventType.equals("LESSON_COMPLETED")) {
-            System.out.println("Don't forget to review your lesson!");
-
         }
     }
     public void displayReminders() {
-        System.out.println("\n========== MY REMINDERS ==========");
+        System.out.println("\n========== SCHEDULED REVIEW WORDS ==========");
         if (reminders.isEmpty()) {
             System.out.println("No reminders yet.");
         } else {

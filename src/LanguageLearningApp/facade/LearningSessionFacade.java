@@ -9,14 +9,20 @@ import LanguageLearningApp.factory.products.ExerciseInterface;
 import LanguageLearningApp.models.Word;
 import LanguageLearningApp.observer.subject.LearningEventPublisher;
 import LanguageLearningApp.strategy.ReviewSchedulerContext;
+import LanguageLearningApp.strategy.StrategyInterface;
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class LearningSessionFacade {
     private final LessonDirector lessonDirector;
     private final CreatorAbstract exerciseCreator;
     private final ReviewSchedulerContext reviewScheduler;
     private final LearningEventPublisher eventPublisher;
+    private LessonProduct activeLesson;
+    private final Set<Word> pendingWords = new HashSet<>();
 
     public LearningSessionFacade(LessonDirector lessonDirector, CreatorAbstract exerciseCreator,
                                  ReviewSchedulerContext reviewScheduler, LearningEventPublisher eventPublisher) {
@@ -39,7 +45,17 @@ public class LearningSessionFacade {
     }
 
     public List<ExerciseInterface> createExercises(LessonProduct lesson) {
-        return exerciseCreator.createExercises(lesson);
+        if (activeLesson != null) {
+            throw new IllegalStateException("Complete the current lesson before starting another.");
+        }
+        List<ExerciseInterface> exercises = exerciseCreator.createExercises(lesson);
+        Set<Word> words = new HashSet<>(lesson.getVocabulary());
+        if (words.size() != exercises.size()) {
+            throw new IllegalArgumentException("A lesson must not repeat the same Word instance.");
+        }
+        activeLesson = lesson;
+        pendingWords.addAll(words);
+        return exercises;
     }
 
     public ExerciseInterface decorateWithHint(ExerciseInterface exercise) {
@@ -52,16 +68,26 @@ public class LearningSessionFacade {
 
     public boolean submitAnswer(ExerciseInterface exercise, String answer) {
         Objects.requireNonNull(exercise);
-        boolean correct = exercise.checkAnswer(answer);
         Word word = exercise.getWord();
+        if (activeLesson == null || !pendingWords.contains(word)) {
+            throw new IllegalStateException("This word is not awaiting an answer in the current lesson.");
+        }
+        boolean correct = exercise.checkAnswer(answer);
+        boolean addedForReview = reviewScheduler.addWord(word);
+        pendingWords.remove(word);
         eventPublisher.notifyObservers(correct ? "ANSWER_CORRECT" : "ANSWER_INCORRECT", word.getTerm());
-        reviewScheduler.addWord(word);
-        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getTerm());
+        if (addedForReview) {
+            notifyReviewScheduled(word);
+        }
         return correct;
     }
 
     public void completeLesson(LessonProduct lesson) {
         Objects.requireNonNull(lesson);
+        if (activeLesson != lesson || !pendingWords.isEmpty()) {
+            throw new IllegalStateException("Answer every exercise in the active lesson before completing it.");
+        }
+        activeLesson = null;
         eventPublisher.notifyObservers("LESSON_COMPLETED", lesson.getTitle());
     }
 
@@ -69,13 +95,17 @@ public class LearningSessionFacade {
         return reviewScheduler.dueWords();
     }
 
-    public java.time.LocalDate review(Word word, int quality) {
-        java.time.LocalDate nextReview = reviewScheduler.review(word, quality);
-        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getTerm());
+    public LocalDate review(Word word, int quality) {
+        LocalDate nextReview = reviewScheduler.review(word, quality);
+        notifyReviewScheduled(word);
         return nextReview;
     }
 
-    public void setReviewStrategy(LanguageLearningApp.strategy.StrategyInterface strategy) {
+    public void setReviewStrategy(StrategyInterface strategy) {
         reviewScheduler.setStrategy(strategy);
+    }
+
+    private void notifyReviewScheduled(Word word) {
+        eventPublisher.notifyObservers("REVIEW_SCHEDULED", word.getLanguage() + ": " + word.getTerm());
     }
 }

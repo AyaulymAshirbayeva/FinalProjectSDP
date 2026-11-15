@@ -11,7 +11,7 @@ public class SM2Strategy implements StrategyInterface {
             case 0, 1 -> 1;
             case 2 -> 6;
             default -> (int) Math.min(Integer.MAX_VALUE,
-                    Math.round(word.getIntervalDays() * word.getEasinessFactor()));
+                    Math.ceil(word.getIntervalDays() * word.getEasinessFactor()));
         };
         int missed = 5 - quality;
         double ease = word.getEasinessFactor() + 0.1 - missed * (0.08 + missed * 0.02);

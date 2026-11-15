@@ -3,12 +3,16 @@ import LanguageLearningApp.observer.observer.ObserverInterface;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class LearningEventPublisher implements SubjectInterface {
-    private List<ObserverInterface> observers = new ArrayList<>();
+    private final List<ObserverInterface> observers = new ArrayList<>();
     @Override
     public void addObserver(ObserverInterface observer) {
-        observers.add(observer);
+        Objects.requireNonNull(observer, "Observer must not be null.");
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
     }
     @Override
     public void removeObserver(ObserverInterface observer) {
@@ -16,7 +20,8 @@ public class LearningEventPublisher implements SubjectInterface {
     }
     @Override
     public void notifyObservers(String eventType, String word) {
-        for (ObserverInterface observer : observers) {
+        Objects.requireNonNull(eventType, "Event type must not be null.");
+        for (ObserverInterface observer : List.copyOf(observers)) {
             observer.update(eventType, word);
         }
     }
