@@ -5,7 +5,6 @@ import java.util.Objects;
 
 public class LessonDirector {
     private final BuilderInterface builder;
-
     public LessonDirector(BuilderInterface builder) {
         this.builder = Objects.requireNonNull(builder);
     }

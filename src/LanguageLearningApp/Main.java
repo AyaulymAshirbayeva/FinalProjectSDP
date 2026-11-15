@@ -83,7 +83,7 @@ public class Main {
 
             ReviewSchedulerContext scheduler = new ReviewSchedulerContext(new SM2Strategy());
             LearningSessionFacade session = new LearningSessionFacade(
-                    director, exerciseCreator, scheduler, publisher);
+                    director, exerciseCreator, scheduler, publisher, user);
             if (strategyChoice.equals("2")) {
                 session.setReviewStrategy(new BasicIntervalStrategy());
             }
@@ -111,7 +111,7 @@ public class Main {
                 if (!input.hasNextLine()) return;
                 String answer = input.nextLine().strip();
                 while (answer.equals("?")) {
-                    ExerciseInterface translated = session.decorateWithTranslation(exercise);
+                    ExerciseInterface translated = session.revealTranslation(exercise);
                     System.out.println("[Decorator] TranslationDecorator added.");
                     System.out.println(translated.getPrompt());
                     System.out.print("Your answer: ");
@@ -122,8 +122,6 @@ public class Main {
                 System.out.println("[Facade] Submitting answer; Observer records progress and schedules review.");
                 if (session.submitAnswer(exercise, answer)) {
                     correct++;
-                    user.incrementCorrectAnswers();
-                    user.addLearnedWord(exercise.getWord());
                     System.out.println("Correct.");
                 } else {
                     System.out.println("Not quite. Correct answer: " + exercise.getWord().getTerm());
@@ -131,7 +129,6 @@ public class Main {
             }
 
             session.completeLesson(lesson);
-            user.incrementCompletedLessons();
             System.out.println("\nLesson result: " + correct + "/" + exercises.size());
 
             List<Word> dueWords = session.dueWords();
@@ -143,14 +140,13 @@ public class Main {
                 String qualityText = input.nextLine().strip();
                 int quality = qualityText.isEmpty() ? 4 : parseQuality(qualityText);
                 System.out.println("Next review: " + session.review(word, quality));
-                if (quality >= 3) user.addLearnedWord(word);
             }
 
             System.out.println("\nCourse vocabulary: " + course.getVocabulary().size() + " words");
             System.out.println("User progress for " + user.getUsername() + ": "
-                    + user.getCorrectAnswersCount() + " correct answers, "
-                    + user.getCompletedLessons() + " completed lesson(s), "
-                    + user.getLearnedWords().size() + " learned word(s).");
+                    + session.getCorrectAnswerCount() + " correct answers, "
+                    + session.getCompletedLessonCount() + " completed lesson(s), "
+                    + session.getLearnedWordCount() + " learned word(s).");
             progress.displayProgress();
             reminders.displayReminders();
         }

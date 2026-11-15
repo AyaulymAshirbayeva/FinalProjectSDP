@@ -1,5 +1,4 @@
 package LanguageLearningApp.builder;
-
 import LanguageLearningApp.models.Word;
 
 public interface BuilderInterface {

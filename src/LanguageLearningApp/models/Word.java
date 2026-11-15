@@ -7,7 +7,6 @@ public class Word {
     private final String hint;            // for HintDecorator
     private final String exampleSentence; // Sentence with a gap for FillBlankExercise
 
-    // fields for memorize stategies (SM2Strategy, BasicIntervalStrategy)
     private int repetitions = 0;
     private int intervalDays = 1;
     private double easinessFactor = 2.5;
@@ -23,39 +22,30 @@ public class Word {
     public String getLanguage() {
         return language;
     }
-
     public String getTerm() {
         return term;
     }
-
     public String getTranslation() {
         return translation;
     }
-
     public String getHint() {
         return hint;
     }
-
     public String getExampleSentence() {
         return exampleSentence;
     }
-
     public int getRepetitions() {
         return repetitions;
     }
-
     public void setRepetitions(int repetitions) {
         this.repetitions = repetitions;
     }
-
     public int getIntervalDays() {
         return intervalDays;
     }
-
     public void setIntervalDays(int intervalDays) {
         this.intervalDays = intervalDays;
     }
-
     public double getEasinessFactor() {
         return easinessFactor;
     }
