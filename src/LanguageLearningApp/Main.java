@@ -17,12 +17,13 @@ import LanguageLearningApp.observer.subject.LearningEventPublisher;
 import LanguageLearningApp.strategy.BasicIntervalStrategy;
 import LanguageLearningApp.strategy.ReviewSchedulerContext;
 import LanguageLearningApp.strategy.SM2Strategy;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        try (Scanner input = new Scanner(System.in)) {
+        try (Scanner input = new Scanner(System.in, StandardCharsets.UTF_8)) {
             System.out.println("=== Language Learning App ===");
 
             String languageChoice = readOption(input,
@@ -57,17 +58,6 @@ public class Main {
             if (strategyChoice == null) return;
 
             LessonDirector director = new LessonDirector(new StandardLessonBuilder());
-            LessonProduct lesson;
-            if (lessonChoice.equals("1")) {
-                lesson = director.greetings(targetLanguage);
-            } else {
-                lesson = director.travel(targetLanguage);
-            }
-
-            Course course = new Course(targetLanguage);
-            course.addLesson(lesson);
-            lesson.getVocabulary().forEach(course::addWord);
-
             CreatorAbstract exerciseCreator;
             if (exerciseChoice.equals("1")) {
                 exerciseCreator = new MultipleChoiceCreator();
@@ -88,21 +78,25 @@ public class Main {
                 session.setReviewStrategy(new BasicIntervalStrategy());
             }
 
+            LessonProduct lesson = lessonChoice.equals("1")
+                    ? session.createGreetingsLesson(targetLanguage)
+                    : session.createTravelLesson(targetLanguage);
+            Course course = new Course(targetLanguage);
+            course.addLesson(lesson);
+
             System.out.println("\nLearner: " + user.getUsername());
             System.out.println("Language: " + targetLanguage);
             System.out.println("Course: " + course.getLanguageName());
-            System.out.println("[Builder] Lesson created: " + lesson.getTitle());
-            System.out.println("[Factory Method] Exercise type: "
+            System.out.println("Lesson: " + lesson.getTitle());
+            System.out.println("Exercise type: "
                     + (exerciseChoice.equals("1") ? "multiple choice" : "fill in the blank"));
-            System.out.println("[Strategy] Review algorithm: "
+            System.out.println("Review algorithm: "
                     + (strategyChoice.equals("1") ? "SM-2" : "Basic intervals"));
 
             List<ExerciseInterface> exercises = session.createExercises(lesson);
-            int correct = 0;
             for (ExerciseInterface exercise : exercises) {
                 ExerciseInterface decorated = session.decorateWithHint(exercise);
-                System.out.println("\n[Decorator] HintDecorator added.");
-                System.out.println(decorated.getPrompt());
+                System.out.println("\n" + decorated.getPrompt());
                 List<String> options = decorated.getOptions();
                 for (int i = 0; i < options.size(); i++) {
                     System.out.println((i + 1) + ". " + options.get(i));
@@ -110,19 +104,19 @@ public class Main {
                 System.out.print("Your answer (or ? to reveal the English translation): ");
                 if (!input.hasNextLine()) return;
                 String answer = input.nextLine().strip();
+                boolean translationShown = false;
                 while (answer.equals("?")) {
-                    ExerciseInterface translated = session.decorateWithTranslation(exercise);
-                    System.out.println("[Decorator] TranslationDecorator added.");
-                    System.out.println(translated.getPrompt());
+                    if (!translationShown) {
+                        decorated = session.decorateWithTranslation(decorated);
+                        translationShown = true;
+                    }
+                    System.out.println(decorated.getPrompt());
                     System.out.print("Your answer: ");
                     if (!input.hasNextLine()) return;
                     answer = input.nextLine().strip();
                 }
 
-                System.out.println("[Facade] Submitting answer; Observer records progress and schedules review.");
-                if (session.submitAnswer(exercise, answer)) {
-                    correct++;
-                    user.incrementCorrectAnswers();
+                if (session.submitAnswer(decorated, answer)) {
                     user.addLearnedWord(exercise.getWord());
                     System.out.println("Correct.");
                 } else {
@@ -131,26 +125,23 @@ public class Main {
             }
 
             session.completeLesson(lesson);
-            user.incrementCompletedLessons();
-            System.out.println("\nLesson result: " + correct + "/" + exercises.size());
+            System.out.println("\nLesson result: " + progress.getCorrectAnswers() + "/" + exercises.size());
 
             List<Word> dueWords = session.dueWords();
-            System.out.println("[Strategy] Words due for review: " + dueWords.size());
+            System.out.println("Words due for review: " + dueWords.size());
             for (Word word : dueWords) {
-                System.out.println("Review: " + word.getTranslation() + " → " + word.getTerm());
-                System.out.print("Recall quality (0-5, Enter=4): ");
+                System.out.println("Translate: " + word.getTranslation() + " (Enter to reveal the answer)");
                 if (!input.hasNextLine()) return;
-                String qualityText = input.nextLine().strip();
-                int quality = qualityText.isEmpty() ? 4 : parseQuality(qualityText);
+                input.nextLine();
+                System.out.println("Answer: " + word.getTerm());
+                Integer quality = readQuality(input);
+                if (quality == null) return;
                 System.out.println("Next review: " + session.review(word, quality));
                 if (quality >= 3) user.addLearnedWord(word);
             }
 
             System.out.println("\nCourse vocabulary: " + course.getVocabulary().size() + " words");
-            System.out.println("User progress for " + user.getUsername() + ": "
-                    + user.getCorrectAnswersCount() + " correct answers, "
-                    + user.getCompletedLessons() + " completed lesson(s), "
-                    + user.getLearnedWords().size() + " learned word(s).");
+            System.out.println("Learned words for " + user.getUsername() + ": " + user.getLearnedWords().size());
             progress.displayProgress();
             reminders.displayReminders();
         }
@@ -169,14 +160,14 @@ public class Main {
         }
     }
 
-    private static int parseQuality(String value) {
-        try {
-            int quality = Integer.parseInt(value);
-            if (quality >= 0 && quality <= 5) return quality;
-        } catch (NumberFormatException ignored) {
-            
+    private static Integer readQuality(Scanner input) {
+        while (true) {
+            System.out.print("Recall quality (0-5, Enter=4): ");
+            if (!input.hasNextLine()) return null;
+            String value = input.nextLine().strip();
+            if (value.isEmpty()) return 4;
+            if (value.matches("[0-5]")) return Integer.parseInt(value);
+            System.out.println("Invalid quality. Enter a whole number from 0 to 5.");
         }
-        System.out.println("Invalid quality; using 4.");
-        return 4;
     }
 }
