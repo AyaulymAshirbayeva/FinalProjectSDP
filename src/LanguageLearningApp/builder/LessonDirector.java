@@ -14,7 +14,6 @@ public class LessonDirector {
         return greetings("english");
     }
 
-    /** Builds the greetings lesson for a supported target language; English is the prompt language. */
     public LessonProduct greetings(String targetLanguage) {
         String language = normalizeLanguage(targetLanguage);
 
@@ -44,10 +43,35 @@ public class LessonDirector {
     }
 
     public LessonProduct travel() {
-        return builder.start(2, "Travel")
-                .addWord(new Word("English", "station", "станция", "Trains stop there.", "Meet me at the ___."))
-                .addWord(new Word("English", "ticket", "билет", "You buy one before a trip.", "I bought a train ___."))
-                .build();
+        return travel("english");
+    }
+
+    public LessonProduct travel(String targetLanguage) {
+        String language = normalizeLanguage(targetLanguage);
+
+        if (language.equals("english")) {
+            return builder.start(2, "Travel")
+                    .addWord(new Word("English", "station", "станция", "Trains stop there.", "Meet me at the ___."))
+                    .addWord(new Word("English", "ticket", "билет", "You buy one before a trip.", "I bought a train ___."))
+                    .build();
+        } else if (language.equals("russian")) {
+            return builder.start(2, "Путешествия")
+                    .addWord(new Word("Russian", "станция", "station", "Trains stop there.", "Это ___."))
+                    .addWord(new Word("Russian", "билет", "ticket", "You need one to travel by train.", "Это ___."))
+                    .build();
+        } else if (language.equals("german")) {
+            return builder.start(2, "Travel")
+                    .addWord(new Word("German", "Bahnhof", "station", "Trains stop there.", "Das ist der ___."))
+                    .addWord(new Word("German", "Fahrkarte", "ticket", "You need one to travel by train.", "Das ist die ___."))
+                    .build();
+        } else if (language.equals("chinese")) {
+            return builder.start(2, "旅行")
+                    .addWord(new Word("Chinese", "车站", "station", "Trains stop there; pronounced chēzhàn.", "这是___。"))
+                    .addWord(new Word("Chinese", "车票", "train ticket", "You need one to travel by train; pronounced chēpiào.", "这是___。"))
+                    .build();
+        } else {
+            throw new IllegalArgumentException("Unsupported language: " + targetLanguage);
+        }
     }
 
     private String normalizeLanguage(String language) {

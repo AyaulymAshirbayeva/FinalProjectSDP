@@ -34,6 +34,10 @@ public class LearningSessionFacade {
         return lessonDirector.greetings(targetLanguage);
     }
 
+    public LessonProduct createTravelLesson(String targetLanguage) {
+        return lessonDirector.travel(targetLanguage);
+    }
+
     public List<ExerciseInterface> createExercises(LessonProduct lesson) {
         return exerciseCreator.createExercises(lesson);
     }
