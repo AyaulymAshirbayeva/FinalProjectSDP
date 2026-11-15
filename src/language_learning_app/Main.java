@@ -136,8 +136,8 @@ public class Main {
 
             System.out.println("\nCourse vocabulary: " + course.getVocabulary().size() + " words");
             System.out.println("User progress for " + user.getUsername() + ": "
-                    + session.getCorrectAnswerCount() + " correct answers, "
-                    + session.getCompletedLessonCount() + " completed lesson(s), "
+                    + progress.getCorrectAnswers() + " correct answers, "
+                    + progress.getCompletedLessons() + " completed lesson(s), "
                     + session.getLearnedWordCount() + " learned word(s).");
             progress.displayProgress();
             reminders.displayReminders();
