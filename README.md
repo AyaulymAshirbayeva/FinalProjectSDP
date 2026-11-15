@@ -1,8 +1,7 @@
 # FinalProjectSDP
-# Language Learning App
-
-## SE-2507
-## Team
+## Language Learning App
+### SE-2507
+### Team
 
 | Member | Patterns |
 | --- | --- |
